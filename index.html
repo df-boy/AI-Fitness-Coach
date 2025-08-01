@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>智能饮食与健身管理系统</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #2E7D32;
+      --secondary-color: #81C784;
+      --light-bg: #f9f9fb;
+      --module-bg: #ffffff;
+      --accent-bg: #e3f2fd;
+      --font-color: #2e2e2e;
+      --border-color: #ddd;
+      --active-color: #1b5e20;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--light-bg);
+      color: var(--font-color);
+    }
+    header {
+      background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+      padding: 24px;
+      text-align: center;
+      color: white;
+      font-size: 2rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    }
+    nav {
+      background-color: white;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      padding: 12px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    nav a {
+      text-decoration: none;
+      color: var(--font-color);
+      font-weight: 600;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    nav a.active {
+      background-color: var(--active-color);
+      color: white;
+    }
+    nav a:hover {
+      color: var(--primary-color);
+      background-color: #f1f8e9;
+    }
+    .container {
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 0 24px;
+    }
+    .module {
+      background: var(--module-bg);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 32px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+      display: none;
+      transition: all 0.3s ease;
+    }
+    .module.active { display: block; }
+    h2 {
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+      border-left: 5px solid var(--primary-color);
+      padding-left: 14px;
+    }
+    .input-group { margin: 20px 0; }
+    .input-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    input, select, button {
+      padding: 12px 14px;
+      font-size: 1rem;
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      margin-top: 6px;
+      font-family: inherit;
+    }
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: bold;
+      border: none;
+      margin-top: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover { background-color: var(--active-color); }
+    .chat-box {
+      height: 250px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px;
+      background-color: #fff;
+      overflow-y: auto;
+      margin-bottom: 12px;
+    }
+    .chat-message {
+      padding: 10px 14px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+    .chat-message.bot {
+      background-color: #e3f2fd;
+      align-self: flex-start;
+    }
+    .chat-message.user {
+      background-color: #c8e6c9;
+      align-self: flex-end;
+      text-align: right;
+    }
+    .badge-preview img {
+      margin-right: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .response-box {
+      background: #f1f8e9;
+      border-left: 4px solid var(--primary-color);
+      padding: 16px;
+      margin-top: 2px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      /* line-height: 1.5; */
+      font-size: 0.95rem;
+      display: none;
+    }
+
+    .response-box h1, .response-box h2, .response-box h3 {
+      color: var(--primary-color);
+    }
+
+    .response-box strong {
+      background-color: #dcedc8;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    .response-box code {
+      background-color: #f0f0f0;
+      font-family: monospace;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <header>智能饮食与健身管理系统</header>
+
+  <nav>
+    <a id="nav-diet" onclick="showModule('diet')"><i class="fas fa-utensils"></i> 饮食管理</a>
+    <a id="nav-fitness" onclick="showModule('fitness')"><i class="fas fa-dumbbell"></i> 健身计划</a>
+    <a id="nav-feedback" onclick="showModule('feedback')"><i class="fas fa-chart-line"></i> 数据可视化</a>
+    <a id="nav-badge" onclick="showModule('badge')"><i class="fas fa-medal"></i> 成就奖励</a>
+    <a id="nav-badge" onclick="showModule('coach')"><i class="fas fa-coach"></i> 大模型教练</a>
+  </nav>
+
+  <div class="container">
+    <div class="module" id="diet">
+      <h2>智能饮食管理模块</h2>
+      <div class="input-group">
+        <label>上传食物图片进行识别与分析：</label>
+        <input type="file" accept="image/*" id="food-upload" onchange="previewFoodImage(event)">
+      </div>
+
+      <div id="food-preview" style="margin-top: 20px; display: none;">
+        <img id="food-image" alt="预览图" style="width: 50%; border-radius: 8px;">
+      </div>
+
+      <script>
+        function previewFoodImage(event) {
+          const file = event.target.files[0];
+          if (file) {
+            const img = document.getElementById("food-image");
+            img.src = URL.createObjectURL(file);
+            document.getElementById("food-preview").style.display = "block";
+          }
+        }
+      </script>
+      <details open>
+        <div id="nutrition-result" class="response-box">
+        </div>
+      </details>
+      <button onclick="handleNutritionAnalysis()">分析营养成分</button>
+
+      <div class="input-group">
+        <label for="dietGoal">饮食目标：</label>
+        <select id="dietGoal">
+          <option>减脂</option>
+          <option>增肌</option>
+          <option>维持体重</option>
+        </select>
+      </div>
+      <details open>
+        <div id="diet-result" class="response-box">
+        </div>
+      </details>
+      <button onclick="handleDietAnalysis()">生成个性化饮食建议</button>
+
+      <div class="input-group">
+        <label>输入已摄入食物信息：</label>
+        <input type="text" placeholder="如：鸡胸肉 200g + 西兰花 100g">
+      </div>
+      <button onclick="alert('自动记录摄入功能待开发')">记录今日饮食</button>
+
+      <div class="input-group">
+        <label>生成推荐食谱：</label>
+      </div>
+      <details open>
+        <div id="rec-result" class="response-box">
+        </div>
+      </details>
+      <button onclick="handleRecAnalysis()">生成推荐食谱</button>
+    </div>
+
+    <div class="module" id="fitness">
+      <h2>个性化健身计划模块</h2>
+      <div class="input-group">
+        <label>上传体测数据：</label>
+        <input type="file" accept="image/*">
+      </div>
+      <div class="input-group"><label>身高 (cm)：</label><input type="text" id="height"></div>
+      <div class="input-group"><label>体重 (kg)：</label><input type="text" id="weight"></div>
+      <div class="input-group"><label>体脂率 (%)：</label><input type="text" id="bodyfat"></div>
+      <!-- <button onclick="alert('身体十分强壮')">AI评估身体数据</button> -->
+      <div class="input-group">
+        <label>AI评估身体数据：</label>
+        <div class="chat-box" id="chat-box">
+          <div class="chat-message bot">你好！我可以帮助你评估你的身体状况，请问有什么可以帮到你？</div>
+          <!-- 更多聊天记录可以在这里追加 -->
+        </div>
+      </div>
+
+      <div class="input-group">
+        <input type="text" id="chat-input" placeholder="输入..." onkeydown="if(event.key==='Enter'){sendMessage()}">
+        <button onclick="sendMessage()">发送</button>
+      </div>
+
+      <div class="input-group">
+        <label>健身目标设定：</label>
+        <select>
+          <option>增肌</option>
+          <option>减脂</option>
+          <option>塑形</option>
+        </select>
+      </div>
+      <button onclick="alert('目标设置功能待实现')">确认健身目标</button>
+
+      <div class="input-group">
+        <label>选择训练周期：</label>
+        <select>
+          <option>周计划</option>
+          <option>月计划</option>
+          <option>季度计划</option>
+        </select>
+      </div>
+      <button onclick="alert('排程算法模块待接入')">生成智能排程</button>
+
+      <div class="input-group">
+        <label>训练提醒时间：</label>
+        <input type="time">
+      </div>
+      <button onclick="alert('提醒功能待接入')">设置训练提醒</button>
+
+      <div class="input-group"><label>疲劳程度（1-10）：</label><input type="range" min="1" max="10" id="fatigue"></div>
+      <div class="input-group"><label>昨晚睡眠时长（小时）：</label><input type="number" min="0" max="12" id="sleep"></div>
+      <details open>
+        <div id="plan-result" class="response-box">
+        </div>
+      </details>
+      <button onclick="handleFitnessFeedback()">提交反馈并动态调整计划</button>
+    </div>
+
+    <div class="module" id="feedback">
+      <h2>实时反馈与数据可视化模块</h2>
+      <div class="input-group"><label>体重 (kg)：</label><input type="number"></div>
+      <div class="input-group"><label>体脂率 (%)：</label><input type="number"></div>
+      <div class="input-group"><label>训练完成率 (%)：</label><input type="number"></div>
+      <div class="input-group"><label>训练消耗卡路里：</label><input type="number"></div>
+      <div class="input-group"><label>主观状态反馈：</label><select><option>精力充沛</option><option>轻度疲劳</option><option>严重疲劳</option></select></div>
+      <div class="input-group"><label>睡眠时长 (小时)：</label><input type="number"></div>
+      <button onclick="startTrendChart()">生成可视化趋势图</button>
+      <canvas id="trendChart" width="700" height="400" style="display:none;margin-top:20px;"></canvas>
+      <div class="input-group"><label>报告周期：</label><select><option>本周</option><option>本月</option></select></div>
+      <button onclick="alert('报告生成')">生成健康与健身报告</button>
+    </div>
+
+    <div class="module" id="badge">
+        <h2>训练成就与奖励兑换模块</h2>
+        <div class="input-group">
+          <label>已获得徽章：</label>
+          <div class="badge-preview">
+            <img src="https://via.placeholder.com/80?text=勋章1" alt="badge1">
+            <img src="https://via.placeholder.com/80?text=勋章2" alt="badge2">
+          </div>
+        </div>
+
+        <!-- <div class="input-group">
+          <label>上传新的奖励图片：</label>
+          <input type="file" accept="image/*" onchange="previewRewardImage(event)">
+          <div class="badge-preview" id="reward-preview"></div>
+        </div> -->
+    </div>
+
+    <div class="module" id="coach">
+        <h2>个性化大模型教练</h2>
+
+        <div class="input-group">
+          <label>大模型教练：</label>
+          <div class="chat-box" id="chat-box-2">
+            <div class="chat-message bot">你好！我是你的健身教练，有什么可以帮你的？</div>
+            <!-- 更多聊天记录可以在这里追加 -->
+          </div>
+        </div>
+
+        <div class="input-group">
+          <input type="text" id="chat-input-2" placeholder="输入..." onkeydown="if(event.key==='Enter'){sendMessage2()}">
+          <button onclick="sendMessage2()">发送</button>
+        </div>
+      </div>
+
+  </div>
+
+  <script>
+    function showModule(id) {
+      document.querySelectorAll('.module').forEach(mod => mod.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+      document.getElementById('nav-' + id).classList.add('active');
+    }
+    showModule('diet');
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.1/dist/markdown-it.min.js"></script>
+<script>
+  const API_BASE = "http://localhost:8080/http://10.55.99.174:8180/v1/chat/completions";
+  const cache = new Map();
+
+  async function imageToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+      });
+  }
+
+  async function callLLM({text, imageFiles=[], suffix="请以 Markdown 格式输出分析结果，内容简洁、结构清晰、使用标题（#）、列表（- 或 1.）等 Markdown 元素，避免冗余空行和冗余分析。"}) {
+    const payload = {
+      metadata: {enable_thinking: false},
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: text + suffix}
+          ]
+        }
+      ]
+    };
+
+    for (let file of imageFiles) {
+      try {
+          const base64 = await imageToBase64(file);
+          payload.messages[0].content.push({
+            type: "image_url",
+            image_url: {url: base64}
+          });
+      } catch (err) {
+          console.error("图片编码失败", err);
+        }
+    }
+
+    try {
+      const response = await fetch(API_BASE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error("HTTP error " + response.status);
+      }
+
+      const result = await response.json();
+      return result.choices[0].message.content;
+    } catch (error) {
+      console.error("请求失败:", error);
+      return "调用失败: " + error.message;
+    }
+  }
+
+  function trimMarkdown(markdownString) {
+    let result = markdownString.split('\n').map(line => line.trim()).join('\n');
+    result = result.replace(/ +/g, ' ');
+    result = result.replace(/(#+)\s+/g, '$1 ');
+    result = result.replace(/([*+-])\s+/g, '$1 ');
+    return result;
+  }
+
+  async function handleNutritionAnalysis() {
+    const fileInput = document.getElementById("food-upload");
+    const files = fileInput.files;
+    if (!files.length) {
+      alert("请上传至少一张食物图片。");
+      return;
+    }
+
+    const resultContainer = document.getElementById("nutrition-result");
+    resultContainer.textContent = "正在分析，请稍候...";
+    resultContainer.style.display = "block";
+    let response
+    if (cache.has(files[0]["name"])) {
+      response = cache.get(files[0]["name"]);
+    }
+    else {
+      response = await callLLM({text: "请你作为一个智能健身教练与营养分析师，分析这张食物图片的营养成分。", imageFiles: Array.from(files)});
+      response = trimMarkdown(response);
+      cache.set(files[0]["name"], response);
+    }
+    const md = window.markdownit();
+    resultContainer.innerHTML = md.render(response);
+  }
+
+  async function handleDietAnalysis() {
+    const dietGoal = document.getElementById("dietGoal").value;
+    const resultContainer = document.getElementById("diet-result");
+    resultContainer.textContent = "正在分析，请稍候...";
+    resultContainer.style.display = "block";
+    let response
+    if (cache.has(dietGoal)) {
+      response = cache.get(dietGoal);
+    }
+    else {
+      response = await callLLM({text: "请你作为一个智能健身教练与营养分析师，根据我的饮食目标：" + dietGoal + "，制定一个切实可行的个性化饮食建议。"});
+      response = trimMarkdown(response);
+      cache.set(dietGoal, response);
+    }
+    const md = window.markdownit();
+    resultContainer.innerHTML = md.render(response);
+  }
+
+  async function handleRecAnalysis() {
+    // const dietGoal = document.getElementById("dietGoal").value;
+    const resultContainer = document.getElementById("rec-result");
+    resultContainer.textContent = "正在分析，请稍候...";
+    resultContainer.style.display = "block";
+    let response
+    if (cache.has("rec")) {
+      response = cache.get("rec");
+    }
+    else {
+      response = await callLLM({text:"请你作为一个智能健身教练与营养分析师，制定一个健康的食谱。"});
+      response = trimMarkdown(response)
+      cache.set("rec", response)
+    }
+    const md = window.markdownit();
+    resultContainer.innerHTML = md.render(response);
+  }
+
+  async function handleFitnessFeedback() {
+    const height = document.getElementById("height")?.value || "";
+    const weight = document.getElementById("weight")?.value || "";
+    const bodyfat = document.getElementById("bodyfat")?.value || "";
+    const fatigue = document.getElementById("fatigue")?.value || "";
+    const sleep = document.getElementById("sleep")?.value || "";
+
+    // 构造自然语言 prompt
+    const prompt = `
+      请根据以下用户反馈，调整其个性化健身计划：
+      - 身高：${height} cm
+      - 体重：${weight} kg
+      - 体脂率：${bodyfat}%
+      - 昨晚睡眠时间：${sleep} 小时
+      - 疲劳程度（1-10）：${fatigue}
+      请综合这些数据，判断是否需要降低训练强度、延长恢复时间，或调整训练周期和内容，并说明理由。 要求语言清晰、内容简介明了，用通俗易懂的语言解释，不要用专业名词。
+        `.trim();
+
+    console.log(prompt)
+
+    const resultContainer = document.getElementById("plan-result");
+    resultContainer.textContent = "正在分析，请稍候...";
+    resultContainer.style.display = "block";
+    
+    let response = await callLLM({text: prompt});
+    response = trimMarkdown(response)
+
+    const md = window.markdownit();
+    resultContainer.innerHTML = md.render(response);
+  }
+
+  
+
+  function showModule(id) {
+    document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+    document.getElementById('nav-' + id).classList.add('active');
+  }
+
+  function previewFoodImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const img = document.getElementById("food-image");
+      img.src = URL.createObjectURL(file);
+      document.getElementById("food-preview").style.display = "block";
+    }
+  }
+
+async function sendMessage() {
+    const input = document.getElementById("chat-input");
+    const chatBox = document.getElementById("chat-box");
+    const message = input.value.trim();
+    if (!message) return;
+
+    const userMsg = document.createElement("div");
+    userMsg.className = "chat-message user";
+    userMsg.textContent = message;
+    chatBox.appendChild(userMsg);
+
+    const botMsg = document.createElement("div");
+    botMsg.className = "chat-message bot";
+    botMsg.textContent = "教练回复中：";
+    chatBox.appendChild(botMsg);
+
+    response = await callLLM({text:"请你作为一个智能健身教练与营养分析师，回答我的问题：" + message + "。", suffix:"要求尽可能用1-2句话回答，语义清晰、语言简洁。"});
+    botMsg.textContent = response;
+
+    input.value = "";
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  async function sendMessage2() {
+    const input = document.getElementById("chat-input-2");
+    const chatBox = document.getElementById("chat-box-2");
+    const message = input.value.trim();
+    if (!message) return;
+
+    const userMsg = document.createElement("div");
+    userMsg.className = "chat-message user";
+    userMsg.textContent = message;
+    chatBox.appendChild(userMsg);
+
+    const botMsg = document.createElement("div");
+    botMsg.className = "chat-message bot";
+    botMsg.textContent = "教练回复中：";
+    chatBox.appendChild(botMsg);
+
+    response = await callLLM({text:"请你作为一个智能健身教练与营养分析师，回答我的问题：" + message + "。", suffix:"要求尽可能用1-2句话回答，语义清晰、语言简洁。"});
+    botMsg.textContent = response;
+
+    input.value = "";
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  let chart;
+  function startTrendChart() {
+    const canvas = document.getElementById('trendChart');
+    canvas.style.display = 'block';
+
+    if (chart) return;
+    const ctx = canvas.getContext('2d');
+    const data = {
+      labels: [],
+      datasets: [
+        { label: '体重 (kg)', borderColor: '#4CAF50', data: [] },
+        { label: '睡眠时长 (h)', borderColor: '#2196F3', data: [] },
+        { label: '卡路里消耗', borderColor: '#FF9800', data: [] },
+      ]
+    };
+
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: data,
+      options: {
+        animation: { duration: 500 },
+        responsive: true,
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    let t = 0;
+    setInterval(() => {
+      t++;
+      if (data.labels.length > 10) {
+        data.labels.shift();
+        data.datasets.forEach(d => d.data.shift());
+      }
+      data.labels.push(`第${t}天`);
+      data.datasets[0].data.push(60 + Math.random() * 5);
+      data.datasets[1].data.push(6 + Math.random() * 2);
+      data.datasets[2].data.push(400 + Math.random() * 100);
+      chart.update();
+    }, 1000);
+  }
+
+  // 默认展示饮食模块
+  showModule('diet');
+</script>
+
+</body>
+</html>
